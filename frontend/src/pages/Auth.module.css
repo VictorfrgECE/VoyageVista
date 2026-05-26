@@ -70,3 +70,18 @@
   color: var(--color-primary);
   font-weight: 500;
 }
+
+.form select {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  background: var(--color-surface);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.form select:focus {
+  border-color: var(--color-primary);
+}

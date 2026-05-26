@@ -5,17 +5,20 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
+// Attache le Bearer token à chaque requête si l'utilisateur est connecté
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('token')
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
+// Sur une réponse 401 : purge le stockage local et redirige vers /login
 api.interceptors.response.use(
   res => res,
   err => {
     if (err.response?.status === 401) {
       localStorage.removeItem('token')
+      localStorage.removeItem('user')
       window.location.href = '/login'
     }
     return Promise.reject(err)
