@@ -32,6 +32,7 @@ require_once __DIR__ . '/controllers/ItineraryController.php';
 require_once __DIR__ . '/controllers/ReservationController.php';
 require_once __DIR__ . '/controllers/NotificationController.php';
 require_once __DIR__ . '/controllers/UniversityController.php';
+require_once __DIR__ . '/controllers/BudgetController.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 $path   = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -56,8 +57,9 @@ try {
         'itineraries'    => (new ItineraryController($db))->handle($method, $id, $body),
         'reservations'   => (new ReservationController($db))->handle($method, $id, $body),
         'notifications'  => (new NotificationController($db))->handle($method, $id, $body),
-        'universities'   => (new UniversityController($db))->handle($method, $id, $body, $action),
-        'auth'           => (new UserController($db))->handleAuth($sub, $body),
+        'universities'        => (new UniversityController($db))->handle($method, $id, $body, $action),
+        'budget_estimations'  => (new BudgetController($db))->handle($method, $id, $body),
+        'auth'                => (new UserController($db))->handleAuth($sub, $body),
         default          => ['error' => 'Route not found'],
     };
     echo json_encode($response);

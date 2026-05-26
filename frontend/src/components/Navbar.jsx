@@ -24,6 +24,7 @@ export default function Navbar() {
         <li><NavLink to="/" end>Accueil</NavLink></li>
         <li><NavLink to="/destinations">Destinations</NavLink></li>
         <li><NavLink to="/universities">Universités</NavLink></li>
+        <li><NavLink to="/budget">Budget</NavLink></li>
       </ul>
       <div className={styles.auth}>
         {user ? (

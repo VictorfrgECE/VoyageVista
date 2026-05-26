@@ -10,6 +10,7 @@ import Admin from './pages/Admin'
 import Dashboard from './pages/Dashboard'
 import Universities from './pages/Universities'
 import UniversityDetail from './pages/UniversityDetail'
+import BudgetCalculator from './pages/BudgetCalculator'
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/destinations" element={<Destinations />} />
           <Route path="/universities" element={<Universities />} />
           <Route path="/universities/:id" element={<UniversityDetail />} />
+          <Route path="/budget" element={<BudgetCalculator />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
