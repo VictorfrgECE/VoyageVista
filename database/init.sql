@@ -110,6 +110,7 @@ CREATE TABLE notifications (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Annuaire des universités partenaires Erasmus
 CREATE TABLE universities (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(200) NOT NULL,
@@ -117,19 +118,27 @@ CREATE TABLE universities (
     country VARCHAR(100) NOT NULL,
     website VARCHAR(255),
     erasmus_code VARCHAR(50),
+    langue VARCHAR(100),                           -- Langue(s) d'enseignement principale(s)
+    email_contact VARCHAR(150),                    -- Email du bureau des relations internationales
+    description TEXT,                              -- Présentation générale de l'université
+    nb_etudiants_etrangers INT UNSIGNED DEFAULT 0, -- Nombre d'étudiants internationaux accueillis
     destination_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (destination_id) REFERENCES destinations(id) ON DELETE SET NULL
 );
 
+-- Logements spécifiques étudiants (résidences, colocations, studios, auberges)
 CREATE TABLE student_housing (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(200) NOT NULL,
-    type ENUM('residence_universitaire', 'colocation', 'studio', 'famille_hote') NOT NULL,
+    type ENUM('residence', 'colocation', 'studio', 'auberge', 'famille_hote') NOT NULL,
+    ville VARCHAR(100) NOT NULL,                   -- Ville du logement (facilite le filtrage)
     destination_id INT NOT NULL,
     university_id INT,
     address VARCHAR(255),
-    price_per_month DECIMAL(10,2) NOT NULL,
+    prix_nuit DECIMAL(10,2),                       -- Prix à la nuit (auberges et courts séjours)
+    price_per_month DECIMAL(10,2),                 -- Prix mensuel (résidences, colocations, studios)
+    distance_campus_km DECIMAL(5,2),               -- Distance au campus principal en km
     available_rooms INT DEFAULT 0,
     description TEXT,
     image_url VARCHAR(255),
@@ -138,7 +147,8 @@ CREATE TABLE student_housing (
     FOREIGN KEY (university_id) REFERENCES universities(id) ON DELETE SET NULL
 );
 
-CREATE TABLE budget_estimations (
+-- Coûts moyens de référence par destination (table statistique, 1 ligne par ville)
+CREATE TABLE destination_costs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     destination_id INT NOT NULL UNIQUE,
     monthly_rent_avg DECIMAL(10,2) NOT NULL,
@@ -154,15 +164,37 @@ CREATE TABLE budget_estimations (
     FOREIGN KEY (destination_id) REFERENCES destinations(id) ON DELETE CASCADE
 );
 
+-- Estimations budgétaires personnalisées sauvegardées par chaque étudiant (calculateur)
+CREATE TABLE budget_estimations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    destination VARCHAR(100) NOT NULL,                       -- Nom libre de la destination visée
+    transport DECIMAL(10,2) DEFAULT 0.00,                   -- Coût aller-retour transport
+    logement DECIMAL(10,2) DEFAULT 0.00,                    -- Coût total logement sur la durée
+    activites DECIMAL(10,2) DEFAULT 0.00,                   -- Budget activités et loisirs
+    vie_quotidienne_par_jour DECIMAL(10,2) DEFAULT 0.00,    -- Dépenses jour : repas, transports locaux
+    nb_jours INT NOT NULL DEFAULT 30,                       -- Durée totale du séjour en jours
+    -- Colonne calculée automatiquement par MySQL
+    total_calcule DECIMAL(12,2) GENERATED ALWAYS AS (
+        transport + logement + activites + (vie_quotidienne_par_jour * nb_jours)
+    ) STORED,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Informations visa et démarches administratives par destination et zone de nationalité
 CREATE TABLE visa_info (
     id INT AUTO_INCREMENT PRIMARY KEY,
     destination_id INT NOT NULL,
     nationality_zone ENUM('EU', 'non-EU', 'tous') NOT NULL DEFAULT 'tous',
+    nationalite VARCHAR(100),                   -- Description textuelle (ex : "Ressortissants UE/EEE")
     visa_required TINYINT(1) DEFAULT 0,
-    visa_type VARCHAR(100),
-    processing_time_days INT,
+    visa_type VARCHAR(100),                     -- Intitulé officiel du visa requis
+    duree_max_jours INT,                        -- Durée maximale de séjour autorisée
+    delai_traitement_jours INT,                 -- Délai de traitement de la demande en jours
     cost_eur DECIMAL(8,2) DEFAULT 0.00,
-    requirements TEXT,
+    lien_officiel VARCHAR(500),                 -- URL officielle pour la demande de visa
+    requirements TEXT,                          -- Documents requis
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (destination_id) REFERENCES destinations(id) ON DELETE CASCADE

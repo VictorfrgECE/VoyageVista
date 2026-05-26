@@ -34,14 +34,49 @@ INSERT INTO destinations (name, country, description, latitude, longitude) VALUE
 ('Copenhague', 'Danemark',  'Modele mondial de durabilite et bien-etre. Enseignement superieur d\'excellence dans un cadre de vie ideal.',             55.676098, 12.568337);
 
 -- ─────────────────────────────────────────────
--- UNIVERSITIES (5 partenaires Erasmus)
+-- UNIVERSITIES (5 partenaires Erasmus avec détails)
 -- ─────────────────────────────────────────────
-INSERT INTO universities (name, city, country, website, erasmus_code, destination_id) VALUES
-('Universitat de Barcelona',    'Barcelone', 'Espagne',   'https://www.ub.edu',          'E BARCELO03',  1),
-('Freie Universitaet Berlin',   'Berlin',    'Allemagne', 'https://www.fu-berlin.de',    'D BERLIN02',   2),
-('Universiteit van Amsterdam',  'Amsterdam', 'Pays-Bas',  'https://www.uva.nl',          'NL AMSTERD01', 3),
-('Sapienza Universita di Roma', 'Rome',      'Italie',    'https://www.uniroma1.it',     'I ROMA01',     4),
-('Universidade de Lisboa',      'Lisbonne',  'Portugal',  'https://www.ulisboa.pt',      'P LISBOA01',   5);
+INSERT INTO universities (name, city, country, website, erasmus_code, langue, email_contact, description, nb_etudiants_etrangers, destination_id) VALUES
+(
+    'Universitat de Barcelona', 'Barcelone', 'Espagne',
+    'https://www.ub.edu', 'E BARCELO03',
+    'Catalan, Castillan',
+    'international@ub.edu',
+    'Fondee en 1450, l\'UB est la principale universite de Barcelone avec 63 000 etudiants. 3e universite europeenne en nombre d\'Erasmus accueillis. Forte en droit, medecine et sciences sociales.',
+    6500, 1
+),
+(
+    'Freie Universitaet Berlin', 'Berlin', 'Allemagne',
+    'https://www.fu-berlin.de', 'D BERLIN02',
+    'Allemand, Anglais',
+    'erasmus@fu-berlin.de',
+    'Universite d\'excellence fondee en 1948, specialisee en sciences humaines, droit et sciences naturelles. Membre de l\'Alliance Europaea, 35 000 etudiants dont 25 % internationaux.',
+    8200, 2
+),
+(
+    'Universiteit van Amsterdam', 'Amsterdam', 'Pays-Bas',
+    'https://www.uva.nl', 'NL AMSTERD01',
+    'Neerlandais, Anglais',
+    'studyabroad@uva.nl',
+    'Fondee en 1632, l\'UvA accueille 42 000 etudiants et propose pres de 150 programmes en anglais. Classee top 60 mondial. Ideale pour economie, droit et sciences sociales.',
+    11000, 3
+),
+(
+    'Sapienza Universita di Roma', 'Rome', 'Italie',
+    'https://www.uniroma1.it', 'I ROMA01',
+    'Italien',
+    'erasmus@uniroma1.it',
+    'Fondee en 1303, la Sapienza est la plus grande universite d\'Europe avec 113 000 etudiants. Partenaire Erasmus+ depuis la creation du programme. Excellence en droit, architecture et ingenierie.',
+    14000, 4
+),
+(
+    'Universidade de Lisboa', 'Lisbonne', 'Portugal',
+    'https://www.ulisboa.pt', 'P LISBOA01',
+    'Portugais, Anglais',
+    'international@ulisboa.pt',
+    'Issue de la fusion des universites de Lisbonne et Technique (2013), l\'ULisboa regroupe 48 000 etudiants et 18 facultes. 300 accords Erasmus+ dans 30 pays. Reconnue pour ingenierie et gestion.',
+    7500, 5
+);
 
 -- ─────────────────────────────────────────────
 -- TRANSPORTS (vols + trains Paris vers chaque ville)
@@ -71,7 +106,7 @@ INSERT INTO transports (type, company, departure_location, arrival_location, dep
 ('flight', 'EasyJet',   'Paris CDG',        'Copenhague CPH',      '2026-09-05 15:00:00', '2026-09-05 17:45:00',  99.99, 156, 10);
 
 -- ─────────────────────────────────────────────
--- ACCOMMODATIONS (hotels et auberges)
+-- ACCOMMODATIONS (hôtels et auberges grand public)
 -- ─────────────────────────────────────────────
 INSERT INTO accommodations (name, type, destination_id, address, price_per_night, stars, capacity, description) VALUES
 ('Hostel One Paralelo',           'hostel',    1, 'Carrer de Blai 55, Barcelone',             22.00, 2,  8, 'Auberge animee dans Poble Sec, 10 min du Barrio Gothic.'),
@@ -84,7 +119,7 @@ INSERT INTO accommodations (name, type, destination_id, address, price_per_night
 ('Aparthotel Trastevere',         'apartment', 4, 'Via della Lungara 10, Rome',               80.00, 3,  2, 'Studio renove dans le quartier Trastevere.'),
 ('Lisbon Lounge Hostel',          'hostel',    5, 'Rua de Sao Nicolau 41, Lisbonne',          20.00, 2,  8, 'Auberge primee en plein Baixa, terrasse vue sur le Tage.'),
 ('LX Factory Studios',            'apartment', 5, 'Rua Rodrigues de Faria 103, Lisbonne',     70.00, 3,  2, 'Studios design dans le complexe creatif LX Factory.'),
-('Czech Inn Prague',              'hostel',    6, 'Francouzska 76, Prague',                   16.00, 2, 10, 'Auberge primee a Vinohrady, quartier prisé des etudiants.'),
+('Czech Inn Prague',              'hostel',    6, 'Francouzska 76, Prague',                   16.00, 2, 10, 'Auberge primee a Vinohrady, quartier prise des etudiants.'),
 ('Prague Old Town Apartment',     'apartment', 6, 'Celetna 10, Prague',                       60.00, 3,  2, 'Appartement en plein coeur de la Vieille Ville de Prague.'),
 ('Wombats Vienna',                'hostel',    7, 'Mariahilfer Str. 137, Vienne',             22.00, 2,  8, 'Hostel moderne pres de la rue commercante, bar rooftop.'),
 ('Das Tigra Wien',                'hotel',     7, 'Herrengasse 12, Vienne',                   89.00, 3,  2, 'Boutique-hotel en Innenstadt, 5 min de la Hofburg.'),
@@ -96,30 +131,45 @@ INSERT INTO accommodations (name, type, destination_id, address, price_per_night
 ('CPH Living Apartments',         'apartment',10, 'Langebrogade 1C, Copenhague',              95.00, 3,  2, 'Appartements flottants sur le canal de Copenhague.');
 
 -- ─────────────────────────────────────────────
--- STUDENT HOUSING
+-- STUDENT HOUSING (résidences, colocations, studios, auberges étudiantes)
+-- prix_nuit = price_per_month / 30 pour faciliter la comparaison court/long séjour
 -- ─────────────────────────────────────────────
-INSERT INTO student_housing (name, type, destination_id, university_id, address, price_per_month, available_rooms, description) VALUES
-('Residencia Penyafort-Montserrat', 'residence_universitaire', 1, 1,    'Carrer de Mozart 2, Barcelone',        520.00, 12, 'Residence UB mixte, tout inclus. Cafeteria, salle de sport, wifi.'),
-('Piso Compartido Gracia',          'colocation',              1, NULL,  'Carrer Verdi 45, Barcelone',           380.00,  3, 'Colocation 4 personnes dans le quartier Gracia, 10 min de la fac.'),
-('Studio Poble Nou',                'studio',                  1, NULL,  'Carrer Pallars 123, Barcelone',        650.00,  2, 'Studio meuble a Poble Nou, proche des universites polytechniques.'),
-('Studentenwerk Berlin Mitte',      'residence_universitaire', 2, 2,    'Luisenstr. 56, Berlin',                310.00, 20, 'Residence officielle Studentenwerk Berlin, chambre simple.'),
-('WG-Zimmer Prenzlauer Berg',       'colocation',              2, NULL,  'Kastanienallee 12, Berlin',            420.00,  2, 'Chambre en WG dans un appartement de 3 etudiants a Prenzlberg.'),
-('DUWO Uilenstede Amsterdam',       'residence_universitaire', 3, 3,    'Uilenstede 103, Amstelveen',           560.00, 35, 'Plus grande residence etudiante des Pays-Bas, navette campus UvA.'),
-('Kamer Jordaan Amsterdam',         'colocation',              3, NULL,  'Egelantiersgracht 10, Amsterdam',      550.00,  1, 'Chambre dans magnifique appartement du Jordaan, canal view.'),
-('Casa dello Studente Sapienza',    'residence_universitaire', 4, 4,    'Viale Regina Elena 295, Rome',         280.00, 18, 'Residence officielle Sapienza, prix conventionne Erasmus.'),
-('Stanza Condivisa Trastevere',     'colocation',              4, NULL,  'Via Trastevere 78, Rome',              350.00,  2, 'Chambre dans appartement romain typique, 4 etudiants.'),
-('Residencia Universitaria Lisboa', 'residence_universitaire', 5, 5,    'Alameda da Universidade, Lisbonne',    320.00, 25, 'Residence partenaire ULisboa, petit-dejeuner et wifi inclus.'),
-('Quarto em Alfama',                'colocation',              5, NULL,  'Rua dos Remedios 50, Lisbonne',        380.00,  2, 'Chambre dans appartement historique, vue sur le Tage.'),
-('Kolej Vetrnik Prague',            'residence_universitaire', 6, NULL,  'Thakurova 1, Prague',                  180.00, 40, 'Residence CVUT, la moins chere de Prague, ideale non-EU.'),
-('Pokoj v Zizkove Prague',          'colocation',              6, NULL,  'Seifertova 22, Prague',                260.00,  2, 'Chambre en colocation dans le quartier boheme de Zizkov.'),
-('OeH Wohnheim TU Wien',           'residence_universitaire', 7, NULL,  'Wiedner Hauptstr. 8, Vienne',          390.00, 15, 'Residence etudiante proche TU Wien et WU Wien.'),
-('WG Neubau Vienne',                'colocation',              7, NULL,  'Neubaugasse 34, Vienne',               450.00,  3, 'Colocation 5 personnes dans le 7e arrondissement branché.'),
-('Kollegium Eotvos Budapest',       'residence_universitaire', 8, NULL,  'Menesi ut 11-13, Budapest',            150.00, 30, 'Prestigieux college-residence lie a l\'ELTE, prix ultra-competitifs.'),
-('Szoba Belvaros Budapest',         'colocation',              8, NULL,  'Vaci utca 3, Budapest',                200.00,  4, 'Chambre en colocation en plein centre de Budapest.'),
-('Griffith Hall Dublin',            'residence_universitaire', 9, NULL,  'Griffith Avenue, Dublin',              650.00, 20, 'Residence privee populaire Erasmus, navette UCD.'),
-('Houseshare Ranelagh Dublin',      'colocation',              9, NULL,  'Charleston Road, Dublin',              700.00,  2, 'Chambre dans maison victorienne, 30 min en bus du Trinity.'),
-('KKIK Kollegium Copenhague',       'residence_universitaire',10, NULL,  'Tagensvej 70, Copenhague',             480.00, 18, 'Residence etudiante mixte, proche du metro M1.'),
-('Lejlighed Norrebro Copenhague',   'colocation',             10, NULL,  'Norrebrogade 45, Copenhague',          600.00,  2, 'Chambre dans appartement typique a Norrebro, quartier vivant.');
+INSERT INTO student_housing (name, type, ville, destination_id, university_id, address, prix_nuit, price_per_month, distance_campus_km, available_rooms, description) VALUES
+-- Barcelone
+('Residencia Penyafort-Montserrat', 'residence',  'Barcelone', 1, 1,    'Carrer de Mozart 2, Barcelone',          17.33, 520.00,  0.5, 12, 'Residence UB mixte, tout inclus. Cafeteria, salle de sport, wifi haut debit.'),
+('Piso Compartido Gracia',          'colocation', 'Barcelone', 1, NULL, 'Carrer Verdi 45, Barcelone',             12.67, 380.00,  1.2,  3, 'Colocation 4 personnes dans le quartier Gracia, 10 min metro de la fac.'),
+('Studio Poble Nou',                'studio',     'Barcelone', 1, NULL, 'Carrer Pallars 123, Barcelone',          21.67, 650.00,  2.0,  2, 'Studio meuble a Poble Nou, proche des universites polytechniques UPC.'),
+('Auberge Be Sound BCN',            'auberge',    'Barcelone', 1, NULL, 'Carrer Nou de la Rambla 91, Barcelone',  18.00, NULL,    1.8,  6, 'Auberge etudiante avec dortoirs 6-8 personnes, casiers fermes, cuisine.'),
+-- Berlin
+('Studentenwerk Berlin Mitte',      'residence',  'Berlin',    2, 2,    'Luisenstr. 56, Berlin',                  10.33, 310.00,  0.2, 20, 'Residence officielle Studentenwerk Berlin, chambre simple, wifi inclus.'),
+('WG-Zimmer Prenzlauer Berg',       'colocation', 'Berlin',    2, NULL, 'Kastanienallee 12, Berlin',              14.00, 420.00,  1.5,  2, 'Chambre en WG dans un appartement de 3 etudiants a Prenzlberg.'),
+('Jugendherberge Berlin Mitte',     'auberge',    'Berlin',    2, NULL, 'Klosterstr. 68, Berlin',                 22.00, NULL,    0.9,  8, 'Auberge de jeunesse DJH labelisee, dortoirs 4-8 places, petit-dej inclus.'),
+-- Amsterdam
+('DUWO Uilenstede Amsterdam',       'residence',  'Amsterdam', 3, 3,    'Uilenstede 103, Amstelveen',             18.67, 560.00,  1.0, 35, 'Plus grande residence etudiante des Pays-Bas, navette campus UvA incluse.'),
+('Kamer Jordaan Amsterdam',         'colocation', 'Amsterdam', 3, NULL, 'Egelantiersgracht 10, Amsterdam',        18.33, 550.00,  3.0,  1, 'Chambre dans magnifique appartement du Jordaan avec vue sur canal.'),
+('Shelter City Amsterdam',          'auberge',    'Amsterdam', 3, NULL, 'Barndesteeg 21, Amsterdam',              27.00, NULL,    2.5,  4, 'Auberge chretienne non-confessionnelle, ambiance internationale, tres securisee.'),
+-- Rome
+('Casa dello Studente Sapienza',    'residence',  'Rome',      4, 4,    'Viale Regina Elena 295, Rome',            9.33, 280.00,  0.3, 18, 'Residence officielle Sapienza, tarif conventionne pour Erasmus.'),
+('Stanza Condivisa Trastevere',     'colocation', 'Rome',      4, NULL, 'Via Trastevere 78, Rome',                11.67, 350.00,  1.8,  2, 'Chambre dans appartement romain typique, 4 etudiants, cuisine equipee.'),
+('Yes! Hostel Roma',                'auberge',    'Rome',      4, NULL, 'Via Magenta 15, Rome',                   23.00, NULL,    0.6,  5, 'Auberge etudiante pres de Termini, dortoirs climatises, bar rooftop.'),
+-- Lisbonne
+('Residencia Universitaria Lisboa', 'residence',  'Lisbonne',  5, 5,    'Alameda da Universidade, Lisbonne',      10.67, 320.00,  0.1, 25, 'Residence partenaire ULisboa, petit-dejeuner et wifi inclus.'),
+('Quarto em Alfama',                'colocation', 'Lisbonne',  5, NULL, 'Rua dos Remedios 50, Lisbonne',          12.67, 380.00,  2.5,  2, 'Chambre dans appartement historique avec vue sur le Tage.'),
+-- Prague
+('Kolej Vetrnik Prague',            'residence',  'Prague',    6, NULL, 'Thakurova 1, Prague',                     6.00, 180.00,  3.0, 40, 'Residence CVUT, la moins chere de Prague, ideale pour non-EU.'),
+('Pokoj v Zizkove Prague',          'colocation', 'Prague',    6, NULL, 'Seifertova 22, Prague',                   8.67, 260.00,  2.0,  2, 'Chambre en colocation dans le quartier boheme de Zizkov.'),
+-- Vienne
+('OeH Wohnheim TU Wien',           'residence',  'Vienne',    7, NULL, 'Wiedner Hauptstr. 8, Vienne',            13.00, 390.00,  0.8, 15, 'Residence etudiante proche TU Wien et WU Wien, transport inclus.'),
+('WG Neubau Vienne',                'colocation', 'Vienne',    7, NULL, 'Neubaugasse 34, Vienne',                 15.00, 450.00,  1.5,  3, 'Colocation 5 personnes dans le 7e arrondissement branche de Vienne.'),
+-- Budapest
+('Kollegium Eotvos Budapest',       'residence',  'Budapest',  8, NULL, 'Menesi ut 11-13, Budapest',               5.00, 150.00,  1.2, 30, 'Prestigieux college-residence lie a l\'ELTE, prix ultra-competitifs.'),
+('Szoba Belvaros Budapest',         'colocation', 'Budapest',  8, NULL, 'Vaci utca 3, Budapest',                   6.67, 200.00,  0.5,  4, 'Chambre en colocation en plein centre de Budapest, idealement situe.'),
+-- Dublin
+('Griffith Hall Dublin',            'residence',  'Dublin',    9, NULL, 'Griffith Avenue, Dublin',                21.67, 650.00,  4.0, 20, 'Residence privee populaire Erasmus, navette UCD, petit-dej inclus.'),
+('Houseshare Ranelagh Dublin',      'colocation', 'Dublin',    9, NULL, 'Charleston Road, Dublin',                23.33, 700.00,  3.0,  2, 'Chambre dans maison victorienne, 30 min en bus du Trinity College.'),
+-- Copenhague
+('KKIK Kollegium Copenhague',       'residence',  'Copenhague',10, NULL, 'Tagensvej 70, Copenhague',              16.00, 480.00,  1.5, 18, 'Residence etudiante mixte, proche du metro M1, velos disponibles.'),
+('Lejlighed Norrebro Copenhague',   'colocation', 'Copenhague',10, NULL, 'Norrebrogade 45, Copenhague',           20.00, 600.00,  2.0,  2, 'Chambre dans appartement typique a Norrebro, quartier vivant et abordable.');
 
 -- ─────────────────────────────────────────────
 -- ACTIVITIES
@@ -143,9 +193,9 @@ INSERT INTO activities (name, description, destination_id, duration_hours, price
 ('Chateaux de Copenhague',            'Visite du Palais de Christiansborg et de Rosenborg.',                    10, 3.0,  18.00, 'culture');
 
 -- ─────────────────────────────────────────────
--- BUDGET ESTIMATIONS (mensuel en EUR)
+-- DESTINATION COSTS (coûts de référence moyens par ville, anciennement budget_estimations)
 -- ─────────────────────────────────────────────
-INSERT INTO budget_estimations (destination_id, monthly_rent_avg, monthly_food_avg, monthly_transport_avg, monthly_leisure_avg, currency, notes) VALUES
+INSERT INTO destination_costs (destination_id, monthly_rent_avg, monthly_food_avg, monthly_transport_avg, monthly_leisure_avg, currency, notes) VALUES
 ( 1, 700.00, 350.00,  55.00, 200.00, 'EUR', 'Loyer residence UB. Carte T-Jove mensuelle 40 EUR. Ticket restaurant UB ~4 EUR.'),
 ( 2, 560.00, 300.00,  86.00, 170.00, 'EUR', 'BVG Semesterticket ~29 EUR/mois. Loyer colocation centre ~600 EUR.'),
 ( 3, 850.00, 380.00,  98.00, 220.00, 'EUR', 'Marche tendu. OV-chipkaart mensuel ~100 EUR. Logement DUWO indispensable a reserver tot.'),
@@ -158,32 +208,95 @@ INSERT INTO budget_estimations (destination_id, monthly_rent_avg, monthly_food_a
 (10, 870.00, 430.00,  95.00, 240.00, 'EUR', 'Copenhague chere mais qualite de vie maximale. Rejsekort mensuel ~95 EUR.');
 
 -- ─────────────────────────────────────────────
--- VISA INFO (EU et non-EU par destination)
+-- BUDGET ESTIMATIONS (calculs personnalisés par étudiant)
+-- total_calcule est généré automatiquement par MySQL : transport + logement + activites + (vie_quotidienne_par_jour * nb_jours)
 -- ─────────────────────────────────────────────
-INSERT INTO visa_info (destination_id, nationality_zone, visa_required, visa_type, processing_time_days, cost_eur, requirements, notes) VALUES
-( 1, 'EU',     0, NULL,                         NULL, 0.00,  NULL, 'Carte d\'identite ou passeport valide. Pas de visa pour les ressortissants UE.'),
-( 1, 'non-EU', 1, 'Visa national etudiant D',     90, 80.00, 'Lettre d\'admission, justificatif ressources >= 600 EUR/mois, assurance maladie, casier judiciaire.', 'Deposer au Consulat d\'Espagne du pays de residence.'),
-( 2, 'EU',     0, NULL,                         NULL, 0.00,  NULL, 'Carte d\'identite ou passeport valide. Inscription Einwohnermeldeamt obligatoire sous 14 jours.'),
-( 2, 'non-EU', 1, 'Nationales Visum etudiant',    60, 75.00, 'Lettre d\'admission, justificatif financier >= 720 EUR/mois ou compte bloque Sperrkonto 10 332 EUR, assurance.', 'Compte bloque Sperrkonto recommande : Deutsche Bank ou Fintiba.'),
-( 3, 'EU',     0, NULL,                         NULL, 0.00,  NULL, 'Carte d\'identite UE valide. Inscription au BRP (registre municipal) obligatoire.'),
-( 3, 'non-EU', 1, 'MVV + Permis de sejour',       60, 192.00,'Lettre d\'acceptation IND, justificatif financier >= 860 EUR/mois, assurance maladie neerlandaise.', 'Dossier depose par l\'universite partenaire aupres de l\'IND.'),
-( 4, 'EU',     0, NULL,                         NULL, 0.00,  NULL, 'Carte d\'identite ou passeport UE. Codice Fiscale a obtenir a l\'Agenzia delle Entrate.'),
-( 4, 'non-EU', 1, 'Visto per studio D',           90, 50.00, 'Lettre d\'admission, justificatif ressources >= 400 EUR/mois, logement justifie, assurance.', 'Permesso di soggiorno a demander a la Questura sous 8 jours d\'arrivee.'),
-( 5, 'EU',     0, NULL,                         NULL, 0.00,  NULL, 'Carte d\'identite ou passeport UE. NIF (numero fiscal) recommande pour ouvrir un compte.'),
-( 5, 'non-EU', 1, 'Visto de estudo',              60, 75.00, 'Lettre d\'admission, preuve financiere >= 760 EUR/mois, assurance maladie, extrait casier judiciaire.', 'Deposer au Consulat du Portugal ou via VFS Global.'),
-( 6, 'EU',     0, NULL,                         NULL, 0.00,  NULL, 'Carte d\'identite ou passeport UE. Enregistrement police etrangere sous 30 jours.'),
-( 6, 'non-EU', 1, 'Long-stay visa etudiant',      60, 100.00,'Lettre d\'admission, preuves de logement et ressources, assurance maladie.', 'Certains pays peuvent demander un permis de sejour directement sur place.'),
-( 7, 'EU',     0, NULL,                         NULL, 0.00,  NULL, 'Carte d\'identite ou passeport UE. Declaration Meldezettel obligatoire sous 3 jours.'),
-( 7, 'non-EU', 1, 'Studentenvisum D',             90, 100.00,'Lettre d\'admission, Meldezettel, justificatif >= 930 EUR/mois, assurance maladie.', 'Visa longue duree via le Consulat d\'Autriche.'),
-( 8, 'EU',     0, NULL,                         NULL, 0.00,  NULL, 'Carte d\'identite ou passeport UE. Enregistrement de residence conseille.'),
-( 8, 'non-EU', 1, 'Visa etudiant D',              60, 60.00, 'Lettre d\'admission, preuve financiere, logement justifie, assurance maladie.', 'Deposer a l\'ambassade de Hongrie ou Consulat competent.'),
-( 9, 'EU',     0, NULL,                         NULL, 0.00,  NULL, 'Passeport ou carte d\'identite UE. L\'Irlande n\'est pas dans Schengen mais est dans l\'UE.'),
-( 9, 'non-EU', 1, 'Study Visa',                   30, 60.00, 'Lettre d\'admission, preuve ressources >= 7 000 EUR pour 1 an, billet retour, hebergement confirme.', 'Enregistrement GNIB / IRP obligatoire a l\'arrivee.'),
-(10, 'EU',     0, NULL,                         NULL, 0.00,  NULL, 'Carte d\'identite ou passeport UE. CPR number a demander a la mairie sous 5 jours.'),
-(10, 'non-EU', 1, 'Residence permit etudiant',    60, 205.00,'Lettre d\'admission, preuve >= 6 243 DKK/mois, logement confirme, assurance maladie.', 'Dossier en ligne via le portail SIRI (nyidanmark.dk).');
+INSERT INTO budget_estimations (user_id, destination, transport, logement, activites, vie_quotidienne_par_jour, nb_jours) VALUES
+-- Alice : Erasmus Barcelone 5 mois (150 jours)
+(6, 'Barcelone', 90.00, 2600.00, 200.00, 15.00, 150),
+-- Thomas : Stage Berlin 6 mois (180 jours)
+(7, 'Berlin', 110.00, 1860.00, 150.00, 12.00, 180),
+-- Sofia : Double diplôme Lisbonne 9 mois (270 jours)
+(10, 'Lisbonne', 95.00, 2880.00, 180.00, 10.00, 270);
 
 -- ─────────────────────────────────────────────
--- ITINERARIES (exemples etudiants)
+-- VISA INFO (réglementation France → destinations Erasmus)
+-- nationality_zone EU = ressortissants UE/EEE · non-EU = hors espace Schengen
+-- ─────────────────────────────────────────────
+INSERT INTO visa_info (destination_id, nationality_zone, nationalite, visa_required, visa_type, duree_max_jours, delai_traitement_jours, cost_eur, lien_officiel, requirements, notes) VALUES
+-- Barcelone
+( 1, 'EU',     'Ressortissants UE/EEE', 0, NULL,                          NULL, NULL, 0.00,   NULL,
+  NULL,
+  'Carte d\'identite ou passeport valide. Libre circulation. Pas de visa pour les ressortissants UE.'),
+( 1, 'non-EU', 'Hors UE/EEE',           1, 'Visa national etudiant D',     365,   90, 80.00,  'https://www.exteriores.gob.es/es/ServiciosalCiudadano/Paginas/Visados.aspx',
+  'Lettre d\'admission, justificatif ressources >= 600 EUR/mois, assurance maladie, casier judiciaire.',
+  'Deposer au Consulat d\'Espagne du pays de residence.'),
+-- Berlin
+( 2, 'EU',     'Ressortissants UE/EEE', 0, NULL,                          NULL, NULL, 0.00,   NULL,
+  NULL,
+  'Carte d\'identite ou passeport valide. Inscription Einwohnermeldeamt obligatoire sous 14 jours.'),
+( 2, 'non-EU', 'Hors UE/EEE',           1, 'Nationales Visum etudiant',    365,   60, 75.00,  'https://www.auswaertiges-amt.de/de/visa-einreise-aufenthalt/visabestimmungen-node',
+  'Lettre d\'admission, justificatif financier >= 720 EUR/mois ou Sperrkonto 10 332 EUR, assurance.',
+  'Compte bloque Sperrkonto recommande : Deutsche Bank ou Fintiba.'),
+-- Amsterdam
+( 3, 'EU',     'Ressortissants UE/EEE', 0, NULL,                          NULL, NULL, 0.00,   NULL,
+  NULL,
+  'Carte d\'identite UE valide. Inscription au BRP (registre municipal) obligatoire a l\'arrivee.'),
+( 3, 'non-EU', 'Hors UE/EEE',           1, 'MVV + Permis de sejour',       365,   60, 192.00, 'https://ind.nl/en/residence-permits/study',
+  'Lettre d\'acceptation IND, justificatif financier >= 860 EUR/mois, assurance maladie neerlandaise.',
+  'Dossier depose par l\'universite partenaire aupres de l\'IND.'),
+-- Rome
+( 4, 'EU',     'Ressortissants UE/EEE', 0, NULL,                          NULL, NULL, 0.00,   NULL,
+  NULL,
+  'Carte d\'identite ou passeport UE. Codice Fiscale a obtenir a l\'Agenzia delle Entrate.'),
+( 4, 'non-EU', 'Hors UE/EEE',           1, 'Visto per studio D',           365,   90, 50.00,  'https://vistoperitalia.esteri.it',
+  'Lettre d\'admission, justificatif ressources >= 400 EUR/mois, logement justifie, assurance.',
+  'Permesso di soggiorno a demander a la Questura sous 8 jours d\'arrivee.'),
+-- Lisbonne
+( 5, 'EU',     'Ressortissants UE/EEE', 0, NULL,                          NULL, NULL, 0.00,   NULL,
+  NULL,
+  'Carte d\'identite ou passeport UE. NIF (numero fiscal) recommande pour ouvrir un compte bancaire.'),
+( 5, 'non-EU', 'Hors UE/EEE',           1, 'Visto de estudo',              365,   60, 75.00,  'https://vistos.mne.gov.pt/en',
+  'Lettre d\'admission, preuve financiere >= 760 EUR/mois, assurance maladie, extrait casier judiciaire.',
+  'Deposer au Consulat du Portugal ou via VFS Global.'),
+-- Prague
+( 6, 'EU',     'Ressortissants UE/EEE', 0, NULL,                          NULL, NULL, 0.00,   NULL,
+  NULL,
+  'Carte d\'identite ou passeport UE. Enregistrement police etrangere sous 30 jours.'),
+( 6, 'non-EU', 'Hors UE/EEE',           1, 'Long-stay visa etudiant',      365,   60, 100.00, 'https://www.mzv.cz/jnp/en/information_for_aliens/index.html',
+  'Lettre d\'admission, preuves de logement et ressources, assurance maladie.',
+  'Certains pays peuvent obtenir un permis de sejour directement sur place.'),
+-- Vienne
+( 7, 'EU',     'Ressortissants UE/EEE', 0, NULL,                          NULL, NULL, 0.00,   NULL,
+  NULL,
+  'Carte d\'identite ou passeport UE. Declaration Meldezettel obligatoire sous 3 jours.'),
+( 7, 'non-EU', 'Hors UE/EEE',           1, 'Studentenvisum D',             365,   90, 100.00, 'https://www.bmi.gv.at/301/Fremdenpolizei_und_Grenzkontrolle',
+  'Lettre d\'admission, Meldezettel, justificatif >= 930 EUR/mois, assurance maladie.',
+  'Visa longue duree via le Consulat d\'Autriche competent.'),
+-- Budapest
+( 8, 'EU',     'Ressortissants UE/EEE', 0, NULL,                          NULL, NULL, 0.00,   NULL,
+  NULL,
+  'Carte d\'identite ou passeport UE. Enregistrement de residence conseille.'),
+( 8, 'non-EU', 'Hors UE/EEE',           1, 'Visa etudiant D',              365,   60, 60.00,  'https://konzuliszolgalat.kormany.hu/en/visa-information',
+  'Lettre d\'admission, preuve financiere, logement justifie, assurance maladie.',
+  'Deposer a l\'ambassade de Hongrie ou Consulat competent.'),
+-- Dublin
+( 9, 'EU',     'Ressortissants UE/EEE', 0, NULL,                          NULL, NULL, 0.00,   NULL,
+  NULL,
+  'Passeport ou carte d\'identite UE. L\'Irlande n\'est pas dans Schengen mais est dans l\'UE.'),
+( 9, 'non-EU', 'Hors UE/EEE',           1, 'Study Visa',                   365,   30, 60.00,  'https://www.irishimmigration.ie/coming-to-study-in-ireland',
+  'Lettre d\'admission, preuve ressources >= 7 000 EUR pour 1 an, billet retour, hebergement confirme.',
+  'Enregistrement GNIB / IRP obligatoire a l\'arrivee en Irlande.'),
+-- Copenhague
+(10, 'EU',     'Ressortissants UE/EEE', 0, NULL,                          NULL, NULL, 0.00,   NULL,
+  NULL,
+  'Carte d\'identite ou passeport UE. CPR number a demander a la mairie sous 5 jours.'),
+(10, 'non-EU', 'Hors UE/EEE',           1, 'Residence permit etudiant',    365,   60, 205.00, 'https://www.nyidanmark.dk/en-GB',
+  'Lettre d\'admission, preuve >= 6 243 DKK/mois, logement confirme, assurance maladie.',
+  'Dossier en ligne via le portail SIRI (nyidanmark.dk).');
+
+-- ─────────────────────────────────────────────
+-- ITINERARIES (exemples étudiants)
 -- ─────────────────────────────────────────────
 INSERT INTO itineraries (user_id, title, description, start_date, end_date, status, total_budget) VALUES
 (6,  'Erasmus Barcelone – Semestre 1',    'Semestre Erasmus a l\'Universitat de Barcelona, fac de droit.',          '2026-09-01', '2027-01-31', 'confirmed', 5800.00),
