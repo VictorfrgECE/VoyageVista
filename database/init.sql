@@ -127,6 +127,21 @@ CREATE TABLE universities (
     FOREIGN KEY (destination_id) REFERENCES destinations(id) ON DELETE SET NULL
 );
 
+-- Messages de contact envoyés aux bureaux des relations internationales
+CREATE TABLE university_contacts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    university_id INT NOT NULL,
+    user_id INT,                                    -- NULL si expéditeur non connecté
+    subject VARCHAR(200) NOT NULL,
+    message TEXT NOT NULL,
+    sender_name VARCHAR(100) NOT NULL,
+    sender_email VARCHAR(150) NOT NULL,
+    status ENUM('unread', 'read', 'replied') DEFAULT 'unread',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (university_id) REFERENCES universities(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
 -- Logements spécifiques étudiants (résidences, colocations, studios, auberges)
 CREATE TABLE student_housing (
     id INT AUTO_INCREMENT PRIMARY KEY,

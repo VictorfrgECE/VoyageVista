@@ -23,6 +23,7 @@ export default function Navbar() {
       <ul className={styles.links}>
         <li><NavLink to="/" end>Accueil</NavLink></li>
         <li><NavLink to="/destinations">Destinations</NavLink></li>
+        <li><NavLink to="/universities">Universités</NavLink></li>
       </ul>
       <div className={styles.auth}>
         {user ? (

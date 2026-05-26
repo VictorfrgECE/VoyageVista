@@ -31,6 +31,7 @@ require_once __DIR__ . '/controllers/ActivityController.php';
 require_once __DIR__ . '/controllers/ItineraryController.php';
 require_once __DIR__ . '/controllers/ReservationController.php';
 require_once __DIR__ . '/controllers/NotificationController.php';
+require_once __DIR__ . '/controllers/UniversityController.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 $path   = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -39,6 +40,8 @@ $parts  = explode('/', trim($path, '/'));
 $resource = $parts[0] ?? '';
 $id       = isset($parts[1]) && is_numeric($parts[1]) ? (int)$parts[1] : null;
 $sub      = $parts[1] ?? null;
+// $action : troisième segment de l'URL — ex. "contact" dans /universities/1/contact
+$action   = $parts[2] ?? null;
 
 $body = json_decode(file_get_contents('php://input'), true) ?? [];
 
@@ -53,6 +56,7 @@ try {
         'itineraries'    => (new ItineraryController($db))->handle($method, $id, $body),
         'reservations'   => (new ReservationController($db))->handle($method, $id, $body),
         'notifications'  => (new NotificationController($db))->handle($method, $id, $body),
+        'universities'   => (new UniversityController($db))->handle($method, $id, $body, $action),
         'auth'           => (new UserController($db))->handleAuth($sub, $body),
         default          => ['error' => 'Route not found'],
     };

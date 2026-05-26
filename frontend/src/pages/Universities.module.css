@@ -1,0 +1,464 @@
+/* ════════════════════════════════════════
+   Page liste /universities
+   ════════════════════════════════════════ */
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.pageHeader {
+  margin-bottom: 1.75rem;
+}
+
+.pageHeader h1 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.pageHeader p {
+  color: var(--color-text-muted);
+  margin-top: 0.35rem;
+  font-size: 0.95rem;
+}
+
+/* ─── Barre de filtres ─── */
+.filterBar {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.filterBar label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-right: 0.25rem;
+}
+
+.filterBar select {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  background: var(--color-bg);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+  min-width: 160px;
+}
+
+.filterBar select:focus {
+  border-color: var(--color-primary);
+}
+
+.filterCount {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* ─── États (chargement / erreur / vide) ─── */
+.state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.stateError {
+  text-align: center;
+  padding: 2rem;
+  color: #dc2626;
+  background: #fef2f2;
+  border-radius: var(--radius);
+  border: 1px solid #fecaca;
+}
+
+/* ─── Grille de cartes ─── */
+.grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.card:hover {
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+  border-color: var(--color-primary);
+}
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.erasmusCode {
+  font-size: 0.7rem;
+  font-family: 'Courier New', monospace;
+  background: #eff6ff;
+  color: var(--color-primary);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.countryTag {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.card h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.35;
+}
+
+.cardCity {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.cardLangue {
+  font-size: 0.8rem;
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.cardDesc {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+  flex: 1;
+}
+
+.cardMeta {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  padding-top: 0.75rem;
+  margin-top: auto;
+  border-top: 1px solid var(--color-border);
+}
+
+.btnCard {
+  margin-top: 0.75rem;
+  text-align: center;
+  display: block;
+  width: 100%;
+}
+
+/* ════════════════════════════════════════
+   Page détail /universities/:id
+   ════════════════════════════════════════ */
+.detailPage {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-bottom: 1.5rem;
+  transition: color 0.2s;
+}
+
+.backLink:hover {
+  color: var(--color-primary);
+}
+
+.detailHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detailTitle .erasmusCode {
+  font-size: 0.75rem;
+  font-family: 'Courier New', monospace;
+  background: #eff6ff;
+  color: var(--color-primary);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 700;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.detailTitle h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 0.4rem;
+}
+
+.detailTitle .cardCity {
+  font-size: 0.95rem;
+}
+
+.detailActions {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+/* ─── Layout deux colonnes ─── */
+.detailBody {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 800px) {
+  .detailBody {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detailMain {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ─── Sections de la fiche ─── */
+.section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.section h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.sectionText {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--color-text-muted);
+}
+
+/* ─── Grille d'infos (dl) ─── */
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 500px) {
+  .infoGrid { grid-template-columns: 1fr; }
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.infoItem dt {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.infoItem dd {
+  font-size: 0.925rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/* ─── Liste logements ─── */
+.housingList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.housingItem {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  background: var(--color-bg);
+}
+
+.housingItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.housingItemHeader strong {
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+.housingTypeBadge {
+  font-size: 0.7rem;
+  background: #f1f5f9;
+  color: var(--color-text-muted);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
+}
+
+.housingMeta {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.housingPrice {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 0.25rem;
+}
+
+.housingDesc {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+/* ════════════════════════════════════════
+   Panel de contact (sticky sidebar)
+   ════════════════════════════════════════ */
+.contactPanel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  position: sticky;
+  top: 80px;
+}
+
+.contactPanel h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.contactNote {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.contactForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.contactForm label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.contactForm input,
+.contactForm textarea {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-family: inherit;
+  outline: none;
+  background: var(--color-bg);
+  transition: border-color 0.2s;
+  resize: vertical;
+}
+
+.contactForm input:focus,
+.contactForm textarea:focus {
+  border-color: var(--color-primary);
+  background: var(--color-surface);
+}
+
+.formError {
+  font-size: 0.85rem;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+}
+
+.successBox {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius);
+  padding: 1rem;
+  color: #166534;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.successBox button {
+  margin-top: 0.75rem;
+  width: 100%;
+  background: none;
+  border: 1px solid #166534;
+  color: #166534;
+  border-radius: var(--radius);
+  padding: 0.5rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.successBox button:hover {
+  background: #dcfce7;
+}

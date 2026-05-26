@@ -296,6 +296,20 @@ INSERT INTO visa_info (destination_id, nationality_zone, nationalite, visa_requi
   'Dossier en ligne via le portail SIRI (nyidanmark.dk).');
 
 -- ─────────────────────────────────────────────
+-- UNIVERSITY CONTACTS (messages de contact simulés)
+-- ─────────────────────────────────────────────
+INSERT INTO university_contacts (university_id, user_id, subject, message, sender_name, sender_email, status) VALUES
+(1, 6,  'Candidature Erasmus 2026-2027 – Sciences Juridiques',
+ 'Bonjour, je suis etudiante en 3e annee de droit a l\'ECE Paris et souhaite candidater pour un semestre Erasmus a l\'Universitat de Barcelona. Pourriez-vous m\'indiquer la procedure de candidature, les dates limites et les pieces a fournir ? Merci.',
+ 'Alice Martin', 'alice.martin@ece-paris.fr', 'read'),
+(2, 7,  'Stage ingenierie logicielle – cooperation ECE / FU Berlin',
+ 'Bonjour, je recherche un stage de 6 mois en ingenierie logicielle a Berlin. Votre universite propose-t-elle un service de placement pour les etudiants Erasmus entrants ? Je serais interesse par une collaboration avec un laboratoire de recherche en IA.',
+ 'Thomas Bernard', 'thomas.bernard@ece-paris.fr', 'replied'),
+(3, 8,  'Logement campus Uilenstede – disponibilite septembre 2026',
+ 'Bonjour, je suis admise en echange a l\'UvA pour le semestre de septembre 2026. Je souhaite postuler a la residence DUWO Uilenstede. Quelles sont les demarches a suivre et le delai de reponse habituel pour une chambre ?',
+ 'Camille Dubois', 'camille.dubois@ece-paris.fr', 'unread');
+
+-- ─────────────────────────────────────────────
 -- ITINERARIES (exemples étudiants)
 -- ─────────────────────────────────────────────
 INSERT INTO itineraries (user_id, title, description, start_date, end_date, status, total_budget) VALUES
