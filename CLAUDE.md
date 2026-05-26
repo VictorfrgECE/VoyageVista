@@ -1,76 +1,74 @@
-# CLAUDE.md
+# VoyageVista — Plateforme de voyage pour étudiants
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Contexte projet
+Application web dynamique de planification de voyages
+spécialisée pour les étudiants (ECE ING2 2026).
+Positionnement : aider les étudiants à organiser
+séjours académiques, échanges Erasmus, voyages de fin d'études.
+Stack : React (frontend) + PHP API REST (backend) + MySQL
 
-## Project Overview
+## Rôles utilisateurs
+- Admin : modération globale, gestion des utilisateurs
+- Prestataire : universités partenaires, agences logement
+  étudiant, organisateurs d'activités jeunes
+- Etudiant (voyageur) : planifie son séjour,
+  contacte des universités, trouve logement étudiant
 
-VoyageVista is a travel planning web app. Users can browse destinations, compare transports and accommodations, build itineraries, and make reservations.
+## Fonctionnalités standard
+1. Auth : inscription/connexion, sessions PHP, 3 rôles
+2. Catalogue destinations : filtres par budget étudiant,
+   type de séjour (Erasmus, tourisme, stage)
+3. Transport : recherche avec filtre petit budget,
+   carte jeune, Interrail
+4. Hébergements : résidences étudiantes, colocations,
+   auberges jeunesse (pas que les hôtels)
+5. Activités : activités étudiantes, soirées,
+   visites culturelles, sport
+6. Itinéraires : composition séjour complet
+7. Notifications : rappels visa, inscription université,
+   deadlines Erasmus
+8. Panier + paiement simulé
 
-**Stack:** React + Vite (frontend) · PHP 8.1+ REST API (backend) · MySQL (database)
+## Fonctionnalités spécifiques étudiants
+9. Annuaire universités : fiche par université
+   (pays, langue, procédure admission, contacts),
+   formulaire de contact simulé
+10. Logement étudiant : résidences, colocations,
+    filtres (budget/distance campus)
+11. Calculateur budget étudiant : estimation coût
+    total du séjour (transport + logement + activités
+    + vie quotidienne)
+12. Guide visa/démarches : infos administratives
+    par destination (visa, CAF, sécurité sociale)
+13. Communauté étudiante : avis et notes laissés
+    par d'autres étudiants
 
-## Commands
+## Contraintes techniques obligatoires (ECE)
+- Séparation stricte frontend React / backend PHP
+- Validation données côté client ET côté PHP
+- Requêtes préparées PDO (protection injections SQL)
+- Protection XSS sur tous les affichages
+- Sessions PHP pour authentification
+- Code commenté et lisible (évalué en soutenance)
+- Commits réguliers : feat:, fix:, docs:
+- Pas de templates complets tout faits
 
-### Frontend
-```bash
-cd frontend
-npm install          # first time
-npm run dev          # dev server → http://localhost:3000
-npm run build        # production build → dist/
-npm run lint         # ESLint
-```
+## Structure projet
+- /frontend : React + Vite (composants, pages, styles)
+- /backend : PHP API REST (retourne JSON)
+- /database : init.sql + seed.sql (données test réalistes)
 
-### Backend
-```bash
-# Serve with PHP's built-in server (dev only)
-cd backend
-php -S localhost:8000
-```
+## Commandes
+- Frontend : cd frontend && npm run dev (port 5173)
+- Backend : cd backend && php -S localhost:8000
+- BDD : MySQL port 3306, base "voyagevista"
 
-### Database
-```bash
-# Créer la base et charger le schéma
-mysql -u root -p < database/init.sql
+## Style de code
+- Commente chaque fonction PHP et composant React
+- Nomme les variables en anglais, commentaires en français
+- Explique toujours le pourquoi des choix de sécurité
+- Chaque fonctionnalité doit être expliquable en soutenance
 
-# Charger les données de test (après init.sql)
-mysql -u root -p voyagevista < database/seed.sql
-```
-Mot de passe de tous les comptes seed : `Test1234!`
-
-Copy `backend/.env.example` to `backend/.env` and set your DB credentials before running the backend.
-
-## Architecture
-
-### Frontend (`frontend/src/`)
-- **`services/api.js`** — Axios instance pointed at `/api`. Attaches Bearer token from `localStorage` on every request; redirects to `/login` on 401.
-- **`App.jsx`** — React Router root. All routes are declared here.
-- **`pages/`** — One file per route. Pages call `api.js` directly; no global state manager yet.
-- **`components/`** — Shared UI (currently just `Navbar`). CSS Modules for scoping.
-- Vite proxies `/api` → `http://localhost:8000` in dev, so no CORS issues during development.
-
-### Backend (`backend/`)
-- **`index.php`** — Single entry point. Parses URL segments (`/api/{resource}/{id}`), loads the matching controller, calls `handle($method, $id, $body)`.
-- **`config/database.php`** — Singleton PDO connection. Reads credentials from `$_ENV` (populated from `.env`).
-- **`controllers/`** — One controller per resource (`UserController`, `DestinationController`, …). Each exposes a `handle(method, id, body)` method that delegates to private CRUD methods.
-- Auth is done inside `UserController::handleAuth()`. The token is a simple HMAC-signed base64 payload — swap for a real JWT library before production.
-- `.htaccess` rewrites all requests to `index.php`.
-
-### Database (`database/`)
-- **`init.sql`** — Schema complet (12 tables). Charger en premier.
-- **`seed.sql`** — Données de test réalistes (10 destinations, 5 universités, 10 users). Charger après init.sql.
-
-Rôles utilisateurs : `admin` | `prestataire` | `etudiant` (défaut).
-
-Relations principales :
-```
-users ──< itineraries ──< reservations
-users ──< notifications
-destinations ──< transports
-destinations ──< accommodations
-destinations ──< activities
-destinations ──< universities ──< student_housing
-destinations ──< budget_estimations   (1-1, UNIQUE)
-destinations ──< visa_info            (1 par zone : EU / non-EU)
-student_housing >── universities      (nullable)
-```
-`reservations.type` + `reservations.reference_id` = référence polymorphe vers transport / accommodation / activity.
-`budget_estimations.monthly_total_avg` est une colonne générée (STORED) — ne pas l'insérer manuellement.
+## Important
+Ne pas générer de code que l'équipe ne comprend pas.
+Toujours expliquer les choix techniques au fur et à mesure.
