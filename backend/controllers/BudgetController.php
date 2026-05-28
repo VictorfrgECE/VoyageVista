@@ -1,111 +1,153 @@
 <?php
-	$str_browser_language = !empty($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? strtok(strip_tags($_SERVER['HTTP_ACCEPT_LANGUAGE']), ',') : '';
-	$str_browser_language = !empty($_GET['language']) ? $_GET['language'] : $str_browser_language;
-	switch (substr($str_browser_language, 0,2))
-	{
-		case 'de':
-			$str_language = 'de';
-			break;
-		case 'en':
-			$str_language = 'en';
-			break;
-		default:
-			$str_language = 'en';
-	}
-    
-	$arr_available_languages = array();
-	$arr_available_languages[] = array('str_name' => 'English', 'str_token' => 'en');
-	$arr_available_languages[] = array('str_name' => 'Deutsch', 'str_token' => 'de');
-    
-	$str_available_languages = (string) '';
-	foreach ($arr_available_languages as $arr_language)
-	{
-		if ($arr_language['str_token'] !== $str_language)
-		{
-			$str_available_languages .= '<a href="'.strip_tags($_SERVER['PHP_SELF']).'?language='.$arr_language['str_token'].'" lang="'.$arr_language['str_token'].'" xml:lang="'.$arr_language['str_token'].'" hreflang="'.$arr_language['str_token'].'">'.$arr_language['str_name'].'</a> | ';
-		}
-	}
-	$str_available_languages = substr($str_available_languages, 0, -3);
-?>
+class BudgetController {
+    public function __construct(private PDO $db) {}
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head lang="<?php echo $str_language; ?>" xml:lang="<?php echo $str_language; ?>">
-<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<title>MAMP PRO</title>
-<style type="text/css">
-    body {
-        font-family: Arial, Helvetica, sans-serif;
-        font-size: .9em;
-        color: #000000;
-        background-color: #FFFFFF;
-        margin: 0;
-        padding: 10px 20px 20px 20px;
+    public function handle(string $method, ?int $id, array $body): array {
+        return match($method) {
+            'GET'    => $id ? $this->show($id) : $this->index(),
+            'POST'   => $this->store($body),
+            'DELETE' => $this->destroy($id),
+            default  => $this->notAllowed(),
+        };
     }
 
-    samp {
-        font-size: 1.3em;
+    // GET /budget_estimations — liste les estimations de l'utilisateur connecté
+    private function index(): array {
+        $payload = $this->requireAuth();
+        if (isset($payload['error'])) return $payload;
+
+        $stmt = $this->db->prepare(
+            "SELECT id, destination, transport, logement, activites,
+                    vie_quotidienne_par_jour, nb_jours, total_calcule, created_at
+             FROM budget_estimations
+             WHERE user_id = ?
+             ORDER BY created_at DESC"
+        );
+        $stmt->execute([$payload['id']]);
+        return ['data' => $stmt->fetchAll()];
     }
 
-    a {
-        color: #000000;
-        background-color: #FFFFFF;
+    // GET /budget_estimations/{id} — détail d'une estimation (propriétaire uniquement)
+    private function show(int $id): array {
+        $payload = $this->requireAuth();
+        if (isset($payload['error'])) return $payload;
+
+        $stmt = $this->db->prepare(
+            "SELECT * FROM budget_estimations WHERE id = ? AND user_id = ?"
+        );
+        $stmt->execute([$id, $payload['id']]);
+        $row = $stmt->fetch();
+        if (!$row) return $this->notFound();
+        return ['data' => $row];
     }
 
-    sup a {
-        text-decoration: none;
+    // POST /budget_estimations — sauvegarde une nouvelle estimation (connecté uniquement)
+    private function store(array $body): array {
+        $payload = $this->requireAuth();
+        if (isset($payload['error'])) return $payload;
+
+        // Validation : la destination est obligatoire
+        if (empty($body['destination'])) {
+            http_response_code(422);
+            return ['error' => 'La destination est requise'];
+        }
+
+        // Durée minimale 1 jour
+        $nb_jours = isset($body['nb_jours']) && is_numeric($body['nb_jours'])
+            ? max(1, (int)$body['nb_jours'])
+            : 30;
+
+        // Validation et cast des montants (positifs uniquement)
+        $transport  = max(0.0, (float)($body['transport']   ?? 0));
+        $logement   = max(0.0, (float)($body['logement']    ?? 0));
+        $activites  = max(0.0, (float)($body['activites']   ?? 0));
+        $vieParJour = max(0.0, (float)($body['vie_quotidienne_par_jour'] ?? 0));
+
+        // Sanitisation XSS sur le seul champ texte libre
+        $destination = htmlspecialchars(trim($body['destination']), ENT_QUOTES, 'UTF-8');
+
+        $stmt = $this->db->prepare(
+            "INSERT INTO budget_estimations
+             (user_id, destination, transport, logement, activites, vie_quotidienne_par_jour, nb_jours)
+             VALUES (?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->execute([
+            $payload['id'],
+            $destination,
+            $transport,
+            $logement,
+            $activites,
+            $vieParJour,
+            $nb_jours,
+        ]);
+
+        // Relit la ligne pour obtenir le total_calcule généré par MySQL
+        $newId = (int)$this->db->lastInsertId();
+        $fetch = $this->db->prepare("SELECT * FROM budget_estimations WHERE id = ?");
+        $fetch->execute([$newId]);
+
+        http_response_code(201);
+        return ['data' => $fetch->fetch()];
     }
 
-    hr {
-        margin-left: 90px;
-        height: 1px;
-        color: #000000;
-        background-color: #000000;
-        border: none;
+    // DELETE /budget_estimations/{id} — supprime une estimation (propriétaire uniquement)
+    private function destroy(?int $id): array {
+        if (!$id) return $this->notFound();
+
+        $payload = $this->requireAuth();
+        if (isset($payload['error'])) return $payload;
+
+        // Vérifie que l'estimation appartient à l'utilisateur avant suppression
+        $check = $this->db->prepare(
+            "SELECT id FROM budget_estimations WHERE id = ? AND user_id = ?"
+        );
+        $check->execute([$id, $payload['id']]);
+        if (!$check->fetch()) return $this->notFound();
+
+        $this->db->prepare("DELETE FROM budget_estimations WHERE id = ?")->execute([$id]);
+        return ['success' => true];
     }
 
-    #logo {
-        margin-bottom: 10px;
-        margin-left: 28px;
+    // --- Helpers authentification ---
+
+    /**
+     * Extrait et vérifie le Bearer token HMAC-SHA256.
+     * Retourne le payload (id, role, exp) ou une réponse d'erreur 401.
+     * Même algorithme que UserController::generateToken/verifyToken.
+     */
+    private function requireAuth(): array {
+        $header = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+        if (!preg_match('/Bearer\s+(.*)$/i', $header, $m)) {
+            http_response_code(401);
+            return ['error' => 'Authentification requise'];
+        }
+        $parts = explode('.', $m[1]);
+        if (count($parts) !== 2) {
+            http_response_code(401);
+            return ['error' => 'Token malformé'];
+        }
+        [$payload64, $sig] = $parts;
+        $secret = $_ENV['JWT_SECRET'] ?? 'secret';
+        // hash_equals : comparaison en temps constant (anti timing-attack)
+        if (!hash_equals(hash_hmac('sha256', $payload64, $secret), $sig)) {
+            http_response_code(401);
+            return ['error' => 'Token invalide'];
+        }
+        $data = json_decode(base64_decode($payload64), true);
+        if (!$data || $data['exp'] < time()) {
+            http_response_code(401);
+            return ['error' => 'Token expiré'];
+        }
+        return $data;
     }
 
-    .text {
-        width: 80%;
-        margin-left: 90px;
-        line-height: 140%;
+    private function notFound(): array {
+        http_response_code(404);
+        return ['error' => 'Estimation introuvable'];
     }
-</style>
-</head>
 
-<body>
-    <p><img src="MAMP-PRO-Logo.png" id="logo" alt="MAMP PRO Logo" width="250" height="49" /></p>
-
-<?php if ($str_language == 'de'): ?>
-
-    <p class="text"><strong>Der virtuelle <span lang="en" xml:lang="en">Host</span> wurde erfolgreich eingerichtet.</strong></p>
-    <p class="text">Wenn Sie diese Seite sehen, dann bedeutet dies, dass der neue virtuelle <span lang="en" xml:lang="en">Host</span> erfolgreich eingerichtet wurde. Sie können jetzt Ihren <span lang="en" xml:lang="en">Web</span>-Inhalt hinzufügen, diese Platzhalter-Seite<sup><a href="#footnote_1">1</a></sup> sollten Sie ersetzen <abbr title="beziehungsweise">bzw.</abbr> löschen.</p>
-    <p class="text">
-        Server-Name: <samp><?php echo $_SERVER['SERVER_NAME']; ?></samp><br />
-        Document-Root: <samp><?php echo $_SERVER['DOCUMENT_ROOT']; ?></samp>
-    </p>
-    <p class="text" id="footnote_1"><small><sup>1</sup> Dateien: <samp>index.php</samp> und <samp>MAMP-PRO-Logo.png</samp></small></p>
-    <hr />
-    <p class="text">This page in: <?php echo $str_available_languages; ?></p>
-
-<?php elseif ($str_language == 'en'): ?>
-
-    <p class="text"><strong>The virtual host was set up successfully.</strong></p>
-    <p class="text">If you can see this page, your new virtual host was set up successfully. Now, web content can be added and this placeholder page<sup><a href="#footnote_1">1</a></sup> should be replaced or deleted.</p>
-    <p class="text">
-        Server name: <samp><?php echo $_SERVER['SERVER_NAME']; ?></samp><br />
-        Document root: <samp><?php echo $_SERVER['DOCUMENT_ROOT']; ?></samp>
-    </p>
-    <p class="text" id="footnote_1"><small><sup>1</sup> Files: <samp>index.php</samp> and <samp>MAMP-PRO-Logo.png</samp></small></p>
-    <hr />
-    <p class="text">Diese Seite auf: <?php echo $str_available_languages; ?></p>
-
-<?php endif; ?>
-
-</body>
-</html>
+    private function notAllowed(): array {
+        http_response_code(405);
+        return ['error' => 'Méthode non autorisée'];
+    }
+}
