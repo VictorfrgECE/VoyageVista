@@ -1,0 +1,366 @@
+<?php
+session_start();
+require_once '../config/connexion.php';
+require_once '../includes/fonctions.php';
+
+if (!estAdmin()) {
+    rediriger('../index.php');
+}
+
+$succes = '';
+$erreur = '';
+$action = isset($_GET['action']) ? trim($_GET['action']) : 'liste';
+$editId = isset($_GET['id']) && ctype_digit($_GET['id']) ? (int)$_GET['id'] : 0;
+
+$categoriesValides = ['plage', 'montagne', 'ville', 'nature', 'aventure', 'culture'];
+
+// Données POST conservées pour re-remplir le formulaire en cas d'erreur
+$champsPost = [];
+
+// ----------------------------------------------------------------
+//  Supprimer une destination
+// ----------------------------------------------------------------
+if (isset($_POST['supprimer']) && isset($_POST['dest_id'])) {
+    $destId = (int)$_POST['dest_id'];
+
+    // Vérifier qu'il n'y a pas de réservations confirmées liées (via transports)
+    $stmtCheck = $pdo->prepare(
+        "SELECT COUNT(*) FROM RESERVATIONS r
+         JOIN TRANSPORTS t ON r.type = 'transport' AND r.reference_id = t.id
+         WHERE t.destination_id = :id AND r.statut = 'confirme'"
+    );
+    $stmtCheck->execute([':id' => $destId]);
+    if ((int)$stmtCheck->fetchColumn() > 0) {
+        $erreur = "Impossible de supprimer : des réservations confirmées existent pour cette destination.";
+    } else {
+        // Récupérer le nom avant suppression pour le message
+        $stmtNom = $pdo->prepare("SELECT nom FROM DESTINATIONS WHERE id = :id");
+        $stmtNom->execute([':id' => $destId]);
+        $nomDest = $stmtNom->fetchColumn();
+
+        $pdo->prepare("DELETE FROM DESTINATIONS WHERE id = :id")->execute([':id' => $destId]);
+        $succes = $nomDest ? "Destination « $nomDest » supprimée." : "Destination supprimée.";
+        $action = 'liste';
+    }
+}
+
+// ----------------------------------------------------------------
+//  Créer une destination
+// ----------------------------------------------------------------
+if (isset($_POST['creer'])) {
+    $champsPost = [
+        'nom'         => trim($_POST['nom']         ?? ''),
+        'pays'        => trim($_POST['pays']        ?? ''),
+        'description' => trim($_POST['description'] ?? ''),
+        'categorie'   => trim($_POST['categorie']   ?? ''),
+        'latitude'    => trim($_POST['latitude']    ?? ''),
+        'longitude'   => trim($_POST['longitude']   ?? ''),
+        'image_url'   => trim($_POST['image_url']   ?? ''),
+    ];
+
+    if (empty($champsPost['nom']) || empty($champsPost['pays'])) {
+        $erreur = "Le nom et le pays sont obligatoires.";
+        $action = 'ajouter';
+    } elseif (empty($champsPost['categorie']) || !in_array($champsPost['categorie'], $categoriesValides)) {
+        $erreur = "Veuillez choisir une catégorie valide.";
+        $action = 'ajouter';
+    } else {
+        $stmt = $pdo->prepare(
+            "INSERT INTO DESTINATIONS (nom, pays, description, categorie, latitude, longitude, image_url)
+             VALUES (:nom, :pays, :desc, :cat, :lat, :lon, :img)"
+        );
+        $stmt->execute([
+            ':nom'  => $champsPost['nom'],
+            ':pays' => $champsPost['pays'],
+            ':desc' => $champsPost['description'],
+            ':cat'  => $champsPost['categorie'],
+            ':lat'  => $champsPost['latitude']  !== '' ? (float)$champsPost['latitude']  : null,
+            ':lon'  => $champsPost['longitude'] !== '' ? (float)$champsPost['longitude'] : null,
+            ':img'  => $champsPost['image_url'] !== '' ? $champsPost['image_url'] : null,
+        ]);
+        $succes = "Destination « " . $champsPost['nom'] . " » créée avec succès.";
+        $action = 'liste';
+        $champsPost = [];
+    }
+}
+
+// ----------------------------------------------------------------
+//  Modifier une destination
+// ----------------------------------------------------------------
+if (isset($_POST['modifier']) && $editId > 0) {
+    $champsPost = [
+        'nom'         => trim($_POST['nom']         ?? ''),
+        'pays'        => trim($_POST['pays']        ?? ''),
+        'description' => trim($_POST['description'] ?? ''),
+        'categorie'   => trim($_POST['categorie']   ?? ''),
+        'latitude'    => trim($_POST['latitude']    ?? ''),
+        'longitude'   => trim($_POST['longitude']   ?? ''),
+        'image_url'   => trim($_POST['image_url']   ?? ''),
+    ];
+
+    if (empty($champsPost['nom']) || empty($champsPost['pays'])) {
+        $erreur = "Le nom et le pays sont obligatoires.";
+        $action = 'modifier';
+    } elseif (!in_array($champsPost['categorie'], $categoriesValides)) {
+        $erreur = "Catégorie invalide.";
+        $action = 'modifier';
+    } else {
+        $stmt = $pdo->prepare(
+            "UPDATE DESTINATIONS
+             SET nom = :nom, pays = :pays, description = :desc,
+                 categorie = :cat, latitude = :lat, longitude = :lon, image_url = :img
+             WHERE id = :id"
+        );
+        $stmt->execute([
+            ':nom'  => $champsPost['nom'],
+            ':pays' => $champsPost['pays'],
+            ':desc' => $champsPost['description'],
+            ':cat'  => $champsPost['categorie'],
+            ':lat'  => $champsPost['latitude']  !== '' ? (float)$champsPost['latitude']  : null,
+            ':lon'  => $champsPost['longitude'] !== '' ? (float)$champsPost['longitude'] : null,
+            ':img'  => $champsPost['image_url'] !== '' ? $champsPost['image_url'] : null,
+            ':id'   => $editId,
+        ]);
+        $succes = "Destination mise à jour avec succès.";
+        $action = 'liste';
+        $champsPost = [];
+    }
+}
+
+// ----------------------------------------------------------------
+//  Données pour affichage
+// ----------------------------------------------------------------
+$destinations = $pdo->query(
+    "SELECT d.*,
+            COUNT(DISTINCT h.id) AS nb_hebergements,
+            COUNT(DISTINCT a.id) AS nb_activites
+     FROM DESTINATIONS d
+     LEFT JOIN HEBERGEMENTS h ON h.destination_id = d.id
+     LEFT JOIN ACTIVITES    a ON a.destination_id = d.id
+     GROUP BY d.id
+     ORDER BY d.nom"
+)->fetchAll();
+
+// Destination à modifier (depuis BDD)
+$destEdition = null;
+if ($action === 'modifier' && $editId > 0) {
+    $stmt = $pdo->prepare("SELECT * FROM DESTINATIONS WHERE id = :id");
+    $stmt->execute([':id' => $editId]);
+    $destEdition = $stmt->fetch();
+    if (!$destEdition) {
+        $erreur = "Destination introuvable.";
+        $action = 'liste';
+    }
+}
+
+$titrePage = 'Admin — Destinations';
+require_once '../includes/header.php';
+?>
+
+<!-- Barre admin -->
+<div style="background:#1A1A2E; color:white; padding:0.6rem 0; font-size:0.82rem;">
+    <div class="container flex-entre">
+        <span>&#9881; Espace Administration</span>
+        <div style="display:flex; gap:1rem;">
+            <a href="index.php"        style="color:rgba(255,255,255,0.7);">Tableau de bord</a>
+            <a href="destinations.php" style="color:white; font-weight:700;">Destinations</a>
+            <a href="utilisateurs.php" style="color:rgba(255,255,255,0.7);">Utilisateurs</a>
+            <a href="reservations.php" style="color:rgba(255,255,255,0.7);">R&eacute;servations</a>
+        </div>
+    </div>
+</div>
+
+<div class="page-entete">
+    <div class="container flex-entre">
+        <div>
+            <h1>Gestion des destinations</h1>
+            <p><?= count($destinations) ?> destination<?= count($destinations) > 1 ? 's' : '' ?> au total</p>
+        </div>
+        <?php if ($action === 'liste'): ?>
+            <a href="destinations.php?action=ajouter" class="btn btn-orange btn-grand">+ Ajouter une destination</a>
+        <?php else: ?>
+            <a href="destinations.php" class="btn btn-secondaire">&larr; Retour &agrave; la liste</a>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div class="container section">
+
+    <?php if ($succes !== ''): ?>
+        <div class="alerte alerte-succes"><?= securiser($succes) ?></div>
+    <?php endif; ?>
+    <?php if ($erreur !== ''): ?>
+        <div class="alerte alerte-erreur"><?= securiser($erreur) ?></div>
+    <?php endif; ?>
+
+    <?php if ($action === 'ajouter' || $action === 'modifier'):
+        // Priorité : données POST (après échec de validation) > données BDD > vide
+        $d = !empty($champsPost) ? $champsPost : ($destEdition ?? []);
+        $isEdit = $action === 'modifier';
+    ?>
+
+        <!-- ============================================================
+             FORMULAIRE CRÉATION / MODIFICATION
+        ============================================================ -->
+        <div class="boite" style="max-width:720px; margin:0 auto;">
+            <h2 style="font-size:1.15rem; margin-bottom:1.5rem;">
+                <?= $isEdit
+                    ? '&#9998; Modifier : ' . securiser($destEdition['nom'] ?? '')
+                    : '&#43; Nouvelle destination' ?>
+            </h2>
+
+            <form action="destinations.php<?= $isEdit ? '?action=modifier&id=' . $editId : '?action=ajouter' ?>"
+                  method="POST" novalidate>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div class="champ-groupe">
+                        <label for="nom">Nom <span style="color:var(--erreur);">*</span></label>
+                        <input type="text" id="nom" name="nom" class="champ"
+                               value="<?= securiser($d['nom'] ?? '') ?>"
+                               maxlength="150" required>
+                    </div>
+                    <div class="champ-groupe">
+                        <label for="pays">Pays <span style="color:var(--erreur);">*</span></label>
+                        <input type="text" id="pays" name="pays" class="champ"
+                               value="<?= securiser($d['pays'] ?? '') ?>"
+                               maxlength="100" required>
+                    </div>
+                </div>
+
+                <div class="champ-groupe">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" class="champ" rows="4"
+                              style="resize:vertical;"><?= securiser($d['description'] ?? '') ?></textarea>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem;">
+                    <div class="champ-groupe">
+                        <label for="categorie">Cat&eacute;gorie <span style="color:var(--erreur);">*</span></label>
+                        <select id="categorie" name="categorie" class="champ" required>
+                            <option value="">-- Choisir --</option>
+                            <?php foreach ($categoriesValides as $cat): ?>
+                                <option value="<?= $cat ?>"
+                                    <?= (($d['categorie'] ?? '') === $cat) ? 'selected' : '' ?>>
+                                    <?= ucfirst($cat) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="champ-groupe">
+                        <label for="latitude">Latitude</label>
+                        <input type="number" id="latitude" name="latitude" class="champ"
+                               step="0.000001" min="-90" max="90"
+                               value="<?= securiser((string)($d['latitude'] ?? '')) ?>"
+                               placeholder="48.856613">
+                    </div>
+                    <div class="champ-groupe">
+                        <label for="longitude">Longitude</label>
+                        <input type="number" id="longitude" name="longitude" class="champ"
+                               step="0.000001" min="-180" max="180"
+                               value="<?= securiser((string)($d['longitude'] ?? '')) ?>"
+                               placeholder="2.352222">
+                    </div>
+                </div>
+
+                <div class="champ-groupe">
+                    <label for="image_url">URL de l'image</label>
+                    <input type="text" id="image_url" name="image_url" class="champ"
+                           value="<?= securiser($d['image_url'] ?? '') ?>"
+                           placeholder="img/destinations/ville.jpg"
+                           maxlength="255">
+                    <?php if (!empty($d['image_url'])): ?>
+                        <div style="margin-top:0.5rem;">
+                            <img src="<?= securiser($d['image_url']) ?>"
+                                 alt="Aperçu"
+                                 style="max-height:80px; border-radius:6px; object-fit:cover;"
+                                 onerror="this.style.display='none'">
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <div style="display:flex; gap:0.75rem; margin-top:0.5rem; flex-wrap:wrap;">
+                    <button type="submit" name="<?= $isEdit ? 'modifier' : 'creer' ?>"
+                            class="btn btn-primaire btn-grand">
+                        <?= $isEdit ? '&#10003; Enregistrer les modifications' : '&#43; Créer la destination' ?>
+                    </button>
+                    <a href="destinations.php" class="btn btn-secondaire btn-grand">Annuler</a>
+                </div>
+
+            </form>
+        </div>
+
+    <?php else: ?>
+
+        <!-- ============================================================
+             LISTE DES DESTINATIONS
+        ============================================================ -->
+        <?php if (empty($destinations)): ?>
+            <div class="boite centrer" style="padding:3rem;">
+                <div style="font-size:3rem; margin-bottom:1rem;">&#127758;</div>
+                <h3>Aucune destination</h3>
+                <p style="color:var(--texte-doux);">Commencez par ajouter une première destination.</p>
+                <a href="destinations.php?action=ajouter" class="btn btn-primaire" style="margin-top:1rem;">+ Ajouter</a>
+            </div>
+        <?php else: ?>
+            <div class="tableau-conteneur">
+                <table class="tableau">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Destination</th>
+                            <th>Cat&eacute;gorie</th>
+                            <th style="text-align:center;">H&eacute;bergements</th>
+                            <th style="text-align:center;">Activit&eacute;s</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($destinations as $d): ?>
+                            <tr>
+                                <td style="color:var(--texte-doux); font-size:0.82rem;"><?= $d['id'] ?></td>
+                                <td>
+                                    <div style="font-weight:700;"><?= securiser($d['nom']) ?></div>
+                                    <div style="font-size:0.78rem; color:var(--texte-doux);"><?= securiser($d['pays']) ?></div>
+                                </td>
+                                <td>
+                                    <span class="badge-categorie badge-<?= securiser($d['categorie']) ?>">
+                                        <?= securiser($d['categorie']) ?>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;"><?= (int)$d['nb_hebergements'] ?></td>
+                                <td style="text-align:center;"><?= (int)$d['nb_activites'] ?></td>
+                                <td>
+                                    <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;">
+                                        <a href="destinations.php?action=modifier&id=<?= $d['id'] ?>"
+                                           class="btn btn-secondaire btn-petit">&#9998; Modifier</a>
+                                        <a href="<?= URL_BASE ?>/destinations/detail.php?id=<?= $d['id'] ?>"
+                                           class="btn btn-secondaire btn-petit" target="_blank">&#128065; Voir</a>
+                                        <form action="destinations.php" method="POST" style="display:inline;"
+                                              onsubmit="return confirm('Supprimer la destination &laquo; <?= securiser($d['nom']) ?> &raquo; ?\nCette action est irréversible.')">
+                                            <input type="hidden" name="dest_id" value="<?= $d['id'] ?>">
+                                            <button type="submit" name="supprimer"
+                                                    class="btn btn-danger btn-petit">
+                                                &#10005; Supprimer
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="6" style="font-size:0.82rem; color:var(--texte-doux);">
+                                Total : <strong><?= count($destinations) ?></strong> destination<?= count($destinations) > 1 ? 's' : '' ?>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        <?php endif; ?>
+
+    <?php endif; ?>
+
+</div>
+
+<?php require_once '../includes/footer.php'; ?>
