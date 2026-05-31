@@ -14,7 +14,7 @@ Pour faire fonctionner ce projet en local, assurez-vous d'avoir installé Wamp
 1.  Lancez Wamp et vérifiez que les services (Apache et MySQL) sont actifs 
 2.  Accédez à phpMyAdmin (http://localhost/phpmyadmin/) depuis votre navigateur.
 3.  Créez une nouvelle base de données.
-4.  Cliquez sur l'onglet **Importer** et sélectionnez le fichier `.sql` fourni dans ce dépôt pour charger les tables nécessaires.
+4.  Cliquez sur l'onglet **Importer** et sélectionnez les fichiers `.sql` fournis dans le dépôt pour charger les tables nécessaires.
 
 
 ### 3. Accès au site
